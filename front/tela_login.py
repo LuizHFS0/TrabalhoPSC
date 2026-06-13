@@ -3,6 +3,7 @@ import time
 
 from cores import *
 from front.menu_principal import *
+from front.editar_perfil import EditarPerfil
 
 data = time.strftime("%d/%m/%Y")
 
@@ -29,6 +30,9 @@ class App(ctk.CTk):
     
     def mostrar_menu(self):
         self.trocar_tela(MenuPrincipal)
+    
+    def mostrar_editar_perfil(self):
+        self.trocar_tela(EditarPerfil)
     
 
 class LoginFrame(ctk.CTkFrame):

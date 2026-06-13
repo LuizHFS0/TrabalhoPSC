@@ -38,12 +38,12 @@ class MenuPrincipal(ctk.CTkFrame):
         # Meu perfil
         
         botoes = [
-            ("Meu Perfil", lambda: print('oi')),
-            ("Meus Treinos", lambda: print('oi')),
-            ("Gerar treinos", lambda: print('oi')),
-            ("Sair", lambda: self.master.destroy())
+            ("Editar Perfil", lambda: master.mostrar_editar_perfil(), AZUL),
+            ("Meus Treinos", lambda: print('oi'), AZUL),
+            ("Gerar treinos", lambda: print('oi'), AZUL),
+            ("Sair", lambda: self.master.destroy(), VERMELHO)
         ]
         
-        for nome, comando in botoes:
-            ctk.CTkButton(container, text=nome, height=75, width=50, command=comando).pack(side="left", fill="x", padx=20) # Esse botão acessa todas as informações pessoais do usuário
+        for nome, comando, cor in botoes:
+            ctk.CTkButton(container, text=nome, height=75, fg_color=cor, width=50, command=comando, text_color="black").pack(side="left", fill="x", padx=20) # Esse botão acessa todas as informações pessoais do usuário
         
