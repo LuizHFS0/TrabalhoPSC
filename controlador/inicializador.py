@@ -5,7 +5,7 @@ from views.tela_login import *
 from views.menu_principal import *
 from views.informacoes import *
 from views.cadastrar_aluno import *
-
+from views.ver_treinos import *
 
 class App(ctk.CTk):
     def __init__(self):
@@ -36,4 +36,6 @@ class App(ctk.CTk):
     
     def mostrar_informacao_aluno(self):
         self.trocar_tela(InformacaoAluno)
-        
+    
+    def mostrar_treinos(self):
+        self.trocar_tela(VerTreinos)

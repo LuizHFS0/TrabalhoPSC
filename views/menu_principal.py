@@ -47,7 +47,7 @@ class MenuPrincipal(ctk.CTkFrame):
         botoes = [
             ("+ Novo Aluno", lambda: self.master.mostrar_cadastrar_aluno(), AZUL),
             ("Informações", lambda: self.master.mostrar_informacao_aluno(), AZUL),
-            ("Meus Treinos", lambda: print("Bonjour")),
+            ("Meus Treinos", lambda: self.master.mostrar_treinos(), AZUL),
             ("Sair", lambda: self.master.destroy(), VERMELHO)
         ]
         
