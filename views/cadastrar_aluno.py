@@ -2,7 +2,7 @@ import customtkinter as ctk
 
 from cores import *
 
-class EditarPerfil(ctk.CTkFrame):
+class CadastrarAluno(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
         self.configure(bg_color=FUNDO)
@@ -15,7 +15,7 @@ class EditarPerfil(ctk.CTkFrame):
         topo = ctk.CTkFrame(centro, height=70, fg_color="transparent")
         topo.pack(fill="x")
         
-        ctk.CTkLabel(topo, text="Editar dados pessoais", font=("Inter", 20, "bold")).place(anchor="center", relx=0.3, y=30)
+        ctk.CTkLabel(topo, text="Cadastro de Aluno", font=("Inter", 20, "bold")).place(anchor="center", relx=0.3, y=30)
 
         btn_salvar = ctk.CTkButton(topo, text="Salvar", font=("Inter", 17, "bold"))
         btn_salvar.place(anchor="center", relx=0.6, y=30)
@@ -23,21 +23,20 @@ class EditarPerfil(ctk.CTkFrame):
         btn_voltar = ctk.CTkButton(topo, text="Voltar", font=("Inter", 17, "bold"), command= lambda: master.mostrar_menu())
         btn_voltar.place(anchor="center", relx=0.8, y=30)
         
-        """Tela que edita os dados pessoais, incialmente irá com um perfil padrão
-        mas aí a pessoa pode editar para os seus dados pessoais, nessa parte iremos pegar os dados: 
+        """Tela que cadastra os dados pessoais, nessa parte iremos cadastrar os dados: 
         Nome completo, Data de Nascimento, Estado Civil, Nacionalidade, CPF, Contato, Endereço, Telefone, E-mail,
         Contato de emergência, Nome do contato de emergencia, Grau de parentesco, Doenças, Medicações, Peso, Altura, Objetivo"""
         
         # Labels da esquerda
         labels_esquerda = [
-            ("Nome completo"),
-            ("Data de Nascimento"),
-            ("Estado Civil"),
-            ("Nacionalidade"),
-            ("Contato"),
-            ("Telefone"),
-            ("Endereço"),
-            ("Objetivo")
+            ("Nome completo:"),
+            ("Data de Nascimento:"),
+            ("Estado Civil:"),
+            ("Nacionalidade:"),
+            ("Contato:"),
+            ("Telefone:"),
+            ("Endereço:"),
+            ("Objetivo:")
         ]
         y = 80
         # Laço for das labels da esquerda

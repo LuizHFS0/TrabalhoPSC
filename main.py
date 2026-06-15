@@ -1,4 +1,4 @@
-from front.tela_login import App
+from controlador.inicializador import App
 
 def main():
     app = App()
