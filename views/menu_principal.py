@@ -47,6 +47,7 @@ class MenuPrincipal(ctk.CTkFrame):
             ("+ Novo Aluno", lambda: master.mostrar_cadastrar_aluno(), AZUL),
             ("Informações", self._abrir_informacoes, AZUL),
             ("Ver Treinos", self._abrir_treinos, AZUL),
+            ("⚡ Gerar Treino", self._abrir_gerar_treino, VERDE),
             ("Sair", master.destroy, VERMELHO),
         ]
 
@@ -158,3 +159,8 @@ class MenuPrincipal(ctk.CTkFrame):
         usuario_id = self._get_id_selecionado()
         if usuario_id is not None:
             self.master.mostrar_treinos(usuario_id)
+
+    def _abrir_gerar_treino(self):
+        usuario_id = self._get_id_selecionado()
+        if usuario_id is not None:
+            self.master.mostrar_gerar_treino(usuario_id)

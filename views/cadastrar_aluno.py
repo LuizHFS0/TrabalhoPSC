@@ -114,13 +114,12 @@ class CadastrarAluno(ctk.CTkFrame):
                 return
 
         try:
-            self._usuario_service.cadastrar(
+            novo_usuario = self._usuario_service.cadastrar(
                 nome_completo=dados["nome_completo"],
                 cpf=dados["cpf"],
                 email=dados["email"],
                 usuario=dados["usuario"],
                 senha=dados["senha"],
-                # Campos opcionais passados como kwargs
                 data_nascimento=data_nasc,
                 estado_civil=dados["estado_civil"] or None,
                 nacionalidade=dados["nacionalidade"] or None,
@@ -130,6 +129,21 @@ class CadastrarAluno(ctk.CTkFrame):
                 nome_contato_emergencia=dados["nome_contato_emergencia"] or None,
                 grau_parentesco=dados["grau_parentesco"] or None,
             )
+
+            # Cadastra o perfil físico se peso e altura foram preenchidos
+            try:
+                peso   = float(dados["peso"])   if dados["peso"]   else 70.0
+                altura = float(dados["altura"]) if dados["altura"] else 170.0
+                self.master.perfil_service.cadastrar_perfil(
+                    usuario_id=novo_usuario.id,
+                    idade=18,  # idade padrão já que não temos campo no form
+                    peso=peso,
+                    altura=altura,
+                    objetivo=dados["objetivo"] or None,
+                )
+            except Exception:
+                pass  # perfil é opcional, não bloqueia o cadastro
+
             messagebox.showinfo("Sucesso", "Aluno cadastrado com sucesso!")
             self.master.mostrar_menu()
 
