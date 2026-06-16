@@ -13,16 +13,13 @@ class GerarTreino(ctk.CTkFrame):
         self.usuario_id = usuario_id
         self._treino_gerado = []
 
-        # Tenta carregar o perfil logo ao abrir
         self._objetivo = "saúde geral"
         self._nivel = "iniciante"
         self._carregar_perfil()
 
-        # ── Frame central ──────────────────────────────────────────────
         centro = ctk.CTkFrame(self, fg_color=FUNDO_CARD, corner_radius=12)
         centro.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.85, relheight=0.88)
 
-        # ── Topo ───────────────────────────────────────────────────────
         topo = ctk.CTkFrame(centro, height=65, fg_color="transparent")
         topo.pack(fill="x", padx=20, pady=(10, 0))
         topo.pack_propagate(False)
@@ -39,7 +36,6 @@ class GerarTreino(ctk.CTkFrame):
             width=110, command=lambda: master.mostrar_menu(),
         ).pack(side="right", pady=10)
 
-        # ── Perfil do aluno ────────────────────────────────────────────
         frame_perfil = ctk.CTkFrame(centro, fg_color=FUNDO_INPUT, corner_radius=8)
         frame_perfil.pack(fill="x", padx=20, pady=(5, 10))
 
@@ -54,7 +50,6 @@ class GerarTreino(ctk.CTkFrame):
         )
         self.label_perfil.pack(anchor="w", padx=15, pady=(0, 10))
 
-        # ── Botão gerar ────────────────────────────────────────────────
         self.btn_gerar = ctk.CTkButton(
             centro, text="🏋️  Gerar Treino com IA",
             font=("Inter", 16, "bold"),
@@ -68,7 +63,6 @@ class GerarTreino(ctk.CTkFrame):
         )
         self.label_status.pack()
 
-        # ── Tabela de exercícios ───────────────────────────────────────
         frame_tabela = ctk.CTkFrame(centro, fg_color="transparent")
         frame_tabela.pack(fill="both", expand=True, padx=20, pady=(5, 5))
 
@@ -103,7 +97,6 @@ class GerarTreino(ctk.CTkFrame):
         self.tabela.pack(side="left", fill="both", expand=True)
         scroll.pack(side="right", fill="y")
 
-        # ── Botão salvar ───────────────────────────────────────────────
         self.btn_salvar = ctk.CTkButton(
             centro, text="💾  Salvar Treino no Banco",
             font=("Inter", 15, "bold"),
@@ -112,10 +105,7 @@ class GerarTreino(ctk.CTkFrame):
         )
         self.btn_salvar.pack(fill="x", padx=20, pady=(8, 15))
 
-    # ── Métodos internos ───────────────────────────────────────────────
-
     def _carregar_perfil(self):
-        """Carrega o perfil físico do aluno logado via master.perfil_service."""
         try:
             perfil = self.master.perfil_service.buscar_perfil(self.usuario_id)
             self._objetivo = perfil.objetivo or "saúde geral"
@@ -130,7 +120,6 @@ class GerarTreino(ctk.CTkFrame):
             self._info_perfil = "Perfil físico não encontrado. Usando configuração padrão."
 
     def _iniciar_geracao(self):
-        """Dispara a geração em thread separada para não travar a interface."""
         self.btn_gerar.configure(state="disabled", text="⏳  Buscando exercícios...")
         self.btn_salvar.configure(state="disabled")
         self.label_status.configure(text="Conectando à API e montando seu treino...", text_color=AZUL)
@@ -180,7 +169,6 @@ class GerarTreino(ctk.CTkFrame):
         self.btn_gerar.configure(state="normal", text="🏋️  Gerar Treino com IA")
 
     def _salvar_treino(self):
-        """Salva todos os exercícios gerados no banco via treino_service do master."""
         if not self._treino_gerado:
             return
         try:
