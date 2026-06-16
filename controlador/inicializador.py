@@ -40,7 +40,11 @@ class App(ctk.CTk):
 
     def trocar_tela(self, classe_tela, **kwargs):
         if self.frame_atual:
-            self.frame_atual.destroy()
+            # Sinaliza para callbacks pendentes que o frame será destruído
+            try:
+                self.frame_atual.destroy()
+            except Exception:
+                pass
         self.frame_atual = classe_tela(self, **kwargs)
         self.frame_atual.pack(fill="both", expand=True)
 

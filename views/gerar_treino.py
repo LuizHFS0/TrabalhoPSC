@@ -137,6 +137,9 @@ class GerarTreino(ctk.CTkFrame):
             self.after(0, self._erro_geracao, str(e))
 
     def _exibir_treino(self, treino: list):
+        if not self.winfo_exists():
+            return
+
         self._treino_gerado = treino
 
         if not treino:
@@ -165,6 +168,9 @@ class GerarTreino(ctk.CTkFrame):
         self.btn_salvar.configure(state="normal")
 
     def _erro_geracao(self, msg: str):
+        if not self.winfo_exists():
+            return
+
         self.label_status.configure(text=f"Erro ao gerar treino: {msg}", text_color=VERMELHO)
         self.btn_gerar.configure(state="normal", text="🏋️  Gerar Treino com IA")
 

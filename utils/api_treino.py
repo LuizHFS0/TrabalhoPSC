@@ -1,111 +1,129 @@
+import random
 import requests
 from typing import Optional
+from dotenv import load_dotenv
+import os
 
-API_KEY = "wXfTaJMnjpdtf9caRh1HVIKgnuUP1RovSAOqUW5v"
-API_URL = "https://api.api-ninjas.com/v1/exercises"
+load_dotenv()
 
-OBJETIVO_TIPO = {
-    "emagrecimento": "cardio",
-    "hipertrofia": "strength",
-    "condicionamento": "cardio",
-    "força": "powerlifting",
-    "flexibilidade": "stretching",
-    "saúde geral": "strength",
+API_KEY = os.getenv("ZYLA_API_KEY", "")
+BASE_URL = "https://zylalabs.com/api/392/exercise+database+api"
+
+# Musculos no formato que a Zyla aceita como "target"
+OBJETIVO_MUSCULOS = {
+    "emagrecimento":    ["abs", "quads", "glutes", "hamstrings", "cardiovascular system"],
+    "condicionamento":  ["abs", "quads", "glutes", "hamstrings", "cardiovascular system"],
+    "hipertrofia":      ["pectorals", "lats", "biceps", "triceps", "delts", "quads"],
+    "força":            ["pectorals", "lats", "biceps", "triceps", "delts", "quads"],
+    "flexibilidade":    ["abs", "glutes", "hamstrings", "spine", "adductors"],
+    "saúde geral":      ["pectorals", "lats", "abs", "quads", "delts"],
 }
 
-NIVEL_DIFICULDADE = {
-    "iniciante": "beginner",
-    "intermediário": "intermediate",
-    "avançado": "expert",
+OBJETIVO_SERIES_REPS = {
+    "emagrecimento":   (3, 15),
+    "condicionamento": (3, 15),
+    "hipertrofia":     (4, 10),
+    "força":           (5, 5),
+    "flexibilidade":   (3, 12),
+    "saúde geral":     (3, 12),
 }
 
 TRADUCAO_MUSCULOS = {
-    "chest": "Peito",
-    "back": "Costas",
-    "legs": "Pernas",
-    "shoulders": "Ombros",
-    "biceps": "Bíceps",
-    "triceps": "Tríceps",
-    "abdominals": "Abdômen",
-    "glutes": "Glúteos",
-    "hamstrings": "Posterior de coxa",
-    "quadriceps": "Quadríceps",
-    "calves": "Panturrilha",
-    "forearms": "Antebraço",
-    "traps": "Trapézio",
-    "lats": "Latíssimo",
+    "abs":                  "Abdômen",
+    "quads":                "Quadríceps",
+    "lats":                 "Latíssimo",
+    "calves":               "Panturrilha",
+    "pectorals":            "Peito",
+    "glutes":               "Glúteos",
+    "hamstrings":           "Posterior de coxa",
+    "adductors":            "Adutores",
+    "triceps":              "Tríceps",
+    "cardiovascular system":"Cardiovascular",
+    "spine":                "Coluna",
+    "upper back":           "Costas superiores",
+    "biceps":               "Bíceps",
+    "delts":                "Deltóide",
+    "forearms":             "Antebraço",
+    "traps":                "Trapézio",
+    "serratus anterior":    "Serrátil anterior",
+    "abductors":            "Abdutores",
+    "levator scapulae":     "Elevador da escápula",
 }
 
 
-def buscar_exercicios(musculo: str, dificuldade: str, tipo: Optional[str] = None, quantidade: int = 2) -> list:
-    params = {"muscle": musculo, "difficulty": dificuldade}
-    if tipo:
-        params["type"] = tipo
-
-    headers = {"X-Api-Key": API_KEY}
+def _buscar_por_musculo(target: str, quantidade: int = 3) -> list:
+    """Busca exercícios pelo músculo alvo na Zyla Exercise Database."""
+    url = f"{BASE_URL}/312/list+by+target+muscle"
+    headers = {"Authorization": f"Bearer {API_KEY}"}
+    params = {"target": target}
 
     try:
-        response = requests.get(API_URL, headers=headers, params=params, timeout=10)
+        response = requests.get(url, headers=headers, params=params, timeout=10)
+        print(f"[API] target={target} status={response.status_code}")
+
         if response.status_code == 200:
-            return response.json()[:quantidade]
-        return []
-    except requests.exceptions.RequestException:
-        return []
+            exercicios = response.json()
+            if exercicios:
+                # Embaralha para variar o treino a cada geração
+                random.shuffle(exercicios)
+                return exercicios[:quantidade]
+        else:
+            print(f"[API] Erro: {response.text[:200]}")
+    except requests.exceptions.RequestException as e:
+        print(f"[API] Erro de conexão: {e}")
+
+    return []
 
 
 def gerar_treino_completo(objetivo: str, nivel: str, doencas: Optional[str] = None) -> list:
     objetivo_lower = objetivo.lower() if objetivo else "saúde geral"
-    nivel_lower = nivel.lower() if nivel else "iniciante"
 
-    tipo = None
-    for chave, valor in OBJETIVO_TIPO.items():
+    # Detecta qual chave de objetivo usar
+    chave_objetivo = "saúde geral"
+    for chave in OBJETIVO_MUSCULOS:
         if chave in objetivo_lower:
-            tipo = valor
+            chave_objetivo = chave
             break
-    if not tipo:
-        tipo = "strength"
 
-    dificuldade = None
-    for chave, valor in NIVEL_DIFICULDADE.items():
-        if chave in nivel_lower:
-            dificuldade = valor
-            break
-    if not dificuldade:
-        dificuldade = "beginner"
-
-    if "emagrecimento" in objetivo_lower or "condicionamento" in objetivo_lower:
-        grupos = ["chest", "back", "legs", "abdominals", "shoulders"]
-        series, repeticoes = 3, 15
-    elif "hipertrofia" in objetivo_lower:
-        grupos = ["chest", "back", "legs", "shoulders", "biceps", "triceps"]
-        series, repeticoes = 4, 10
-    elif "força" in objetivo_lower:
-        grupos = ["chest", "back", "legs", "shoulders", "biceps", "triceps"]
-        series, repeticoes = 5, 5
-    else:
-        grupos = ["chest", "back", "legs", "abdominals", "shoulders"]
-        series, repeticoes = 3, 12
+    musculos = OBJETIVO_MUSCULOS[chave_objetivo]
+    series, repeticoes = OBJETIVO_SERIES_REPS[chave_objetivo]
+    nome_treino = f"Treino - {objetivo.title()}"
 
     treino = []
 
-    for musculo in grupos:
-        exercicios = buscar_exercicios(musculo, dificuldade, tipo, quantidade=2)
-
-        if not exercicios:
-            exercicios = buscar_exercicios(musculo, dificuldade, quantidade=2)
+    for musculo in musculos:
+        exercicios = _buscar_por_musculo(musculo, quantidade=2)
+        print(f"[TREINO] musculo={musculo} → {len(exercicios)} exercício(s)")
 
         for ex in exercicios:
-            musculo_pt = TRADUCAO_MUSCULOS.get(ex.get("muscle", ""), ex.get("muscle", ""))
+            musculo_pt = TRADUCAO_MUSCULOS.get(ex.get("target", ""), ex.get("target", ""))
             treino.append({
-                "nome_treino": f"Treino - {objetivo.title()}",
-                "exercicio": ex.get("name", "Exercício"),
-                "musculo": musculo_pt,
-                "tipo": ex.get("type", ""),
-                "instrucoes": ex.get("instructions", ""),
-                "series": series,
-                "repeticoes": repeticoes,
-                "carga": None,
-                "observacoes": f"Músculo: {musculo_pt} | Nível: {nivel}",
+                "nome_treino":  nome_treino,
+                "exercicio":    ex.get("name", "Exercício").title(),
+                "musculo":      musculo_pt,
+                "series":       series,
+                "repeticoes":   repeticoes,
+                "carga":        None,
+                "observacoes":  f"Músculo: {musculo_pt} | Equipamento: {ex.get('equipment', '—')} | Nível: {nivel}",
             })
 
+    print(f"[TREINO] Total gerado: {len(treino)} exercícios")
+
+    if not treino:
+        print("[TREINO] API vazia — usando treino de fallback")
+        return _treino_fallback(objetivo, nivel)
+
     return treino
+
+
+def _treino_fallback(objetivo: str, nivel: str) -> list:
+    """Treino padrão caso a API não retorne dados."""
+    nome = f"Treino - {objetivo.title()}"
+    return [
+        {"nome_treino": nome, "exercicio": "Supino Reto",      "musculo": "Peito",      "series": 3, "repeticoes": 12, "carga": None, "observacoes": f"Nível: {nivel}"},
+        {"nome_treino": nome, "exercicio": "Agachamento",       "musculo": "Quadríceps", "series": 3, "repeticoes": 12, "carga": None, "observacoes": f"Nível: {nivel}"},
+        {"nome_treino": nome, "exercicio": "Remada Curvada",    "musculo": "Costas",     "series": 3, "repeticoes": 12, "carga": None, "observacoes": f"Nível: {nivel}"},
+        {"nome_treino": nome, "exercicio": "Desenvolvimento",   "musculo": "Deltóide",   "series": 3, "repeticoes": 12, "carga": None, "observacoes": f"Nível: {nivel}"},
+        {"nome_treino": nome, "exercicio": "Rosca Direta",      "musculo": "Bíceps",     "series": 3, "repeticoes": 12, "carga": None, "observacoes": f"Nível: {nivel}"},
+        {"nome_treino": nome, "exercicio": "Tríceps Pulley",    "musculo": "Tríceps",    "series": 3, "repeticoes": 12, "carga": None, "observacoes": f"Nível: {nivel}"},
+    ]

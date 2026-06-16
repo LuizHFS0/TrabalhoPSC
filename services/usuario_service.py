@@ -17,10 +17,9 @@ from utils.security import gerar_hash
 
 
 class UsuarioService:
-    """CRUD de usuário com validação de unicidade."""
-
     def __init__(self, session: Session) -> None:
         self._dao = UsuarioDAO(session)
+        self._session = session
 
     def cadastrar(
         self,
@@ -50,7 +49,13 @@ class UsuarioService:
             senha_hash=gerar_hash(senha),
             **kwargs,
         )
-        return self._dao.create(obj)
+        try:
+            resultado = self._dao.create(obj)
+            self._session.commit()
+            return resultado
+        except Exception:
+            self._session.rollback()
+            raise
 
     def buscar_por_id(self, id: int) -> Usuario:
         obj = self._dao.get_by_id(id)
