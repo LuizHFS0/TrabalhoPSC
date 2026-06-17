@@ -8,8 +8,6 @@ from utils.exceptions import TreinoNaoEncontradoError
 
 
 class TreinoService:
-    """CRUD de treinos."""
-
     def __init__(self, session: Session) -> None:
         self._dao = TreinoDAO(session)
         self._session = session
@@ -38,7 +36,7 @@ class TreinoService:
             carga=carga,
             observacoes=observacoes,
         )
-       try:
+        try:
             resultado = self._dao.create(treino)
             self._session.commit()
             return resultado
