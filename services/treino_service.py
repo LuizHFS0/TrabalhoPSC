@@ -12,6 +12,7 @@ class TreinoService:
 
     def __init__(self, session: Session) -> None:
         self._dao = TreinoDAO(session)
+        self._session = session
 
     def criar_treino(
         self,
@@ -37,7 +38,13 @@ class TreinoService:
             carga=carga,
             observacoes=observacoes,
         )
-        return self._dao.create(treino)
+       try:
+            resultado = self._dao.create(treino)
+            self._session.commit()
+            return resultado
+        except Exception:
+            self._session.rollback()
+            raise
 
     def listar_treinos(self, usuario_id: int) -> list[Treino]:
         return self._dao.listar_por_usuario(usuario_id)
