@@ -13,6 +13,7 @@ class PerfilService:
 
     def __init__(self, session: Session) -> None:
         self._dao = PerfilDAO(session)
+        self._session = session  # necessário para commit/rollback explícito
 
     def _validar_dados(self, peso: float, altura: float, idade: int) -> None:
         if not validar_peso(peso):
@@ -42,7 +43,13 @@ class PerfilService:
             altura=altura,
             **kwargs,
         )
-        return self._dao.create(perfil)
+        try:
+            resultado = self._dao.create(perfil)
+            self._session.commit()  # CORRIGIDO: commit explícito garante persistência
+            return resultado
+        except Exception:
+            self._session.rollback()
+            raise
 
     def atualizar_perfil(self, usuario_id: int, **campos) -> PerfilFisico:
         perfil = self._dao.buscar_por_usuario(usuario_id)
@@ -61,7 +68,14 @@ class PerfilService:
 
         for campo, valor in campos.items():
             setattr(perfil, campo, valor)
-        return self._dao.update(perfil)
+
+        try:
+            resultado = self._dao.update(perfil)
+            self._session.commit()  # CORRIGIDO: commit explícito garante persistência
+            return resultado
+        except Exception:
+            self._session.rollback()
+            raise
 
     def buscar_perfil(self, usuario_id: int) -> PerfilFisico:
         perfil = self._dao.buscar_por_usuario(usuario_id)

@@ -37,25 +37,25 @@ class MenuPrincipal(ctk.CTkFrame):
 
         ctk.CTkLabel(frame_pesquisa, text="Pesquisar:", font=("Inter", 14, "bold")).pack(anchor="w")
 
-        self.entrada_pesquisa = ctk.CTkEntry(frame_pesquisa, width=250, height=40)
+        self.entrada_pesquisa = ctk.CTkEntry(frame_pesquisa, width=200, height=40)
         self.entrada_pesquisa.pack()
-        # Pesquisa a cada tecla digitada
         self.entrada_pesquisa.bind("<KeyRelease>", lambda e: self._filtrar())
 
         # Botões de ação
         botoes = [
-            ("+ Novo Aluno", lambda: master.mostrar_cadastrar_aluno(), AZUL),
-            ("Informações", self._abrir_informacoes, AZUL),
-            ("Ver Treinos", self._abrir_treinos, AZUL),
-            ("⚡ Gerar Treino", self._abrir_gerar_treino, VERDE),
-            ("Sair", master.destroy, VERMELHO),
+            ("+ Novo Aluno",   lambda: master.mostrar_cadastrar_aluno(), AZUL),
+            ("Informações",    self._abrir_informacoes,                   AZUL),
+            ("Ver Treinos",    self._abrir_treinos,                       AZUL),
+            ("⚡ Gerar Treino", self._abrir_gerar_treino,                  VERDE),
+            ("🗑 Excluir Aluno", self._excluir_aluno,                      VERMELHO),  # NOVO
+            ("Sair",           master.destroy,                            VERMELHO),
         ]
 
         for nome, comando, cor in botoes:
             ctk.CTkButton(
                 frame_botoes, text=nome, height=50, fg_color=cor,
                 width=50, command=comando, text_color="black"
-            ).pack(side="left", fill="x", padx=10)
+            ).pack(side="left", fill="x", padx=6)
 
         # ── Tabela ────────────────────────────────────────────────────
         style = ttk.Style()
@@ -64,17 +64,17 @@ class MenuPrincipal(ctk.CTkFrame):
         colunas = ("id", "nome", "contato", "email", "datansc", "peso", "altura")
         self.tabela = ttk.Treeview(centro, columns=colunas, show="headings")
 
-        self.tabela.tag_configure("par", background="#F0F0F0")
+        self.tabela.tag_configure("par",   background="#F0F0F0")
         self.tabela.tag_configure("impar", background="#A5A5A5")
 
         cabecalhos = {
-            "id": ("ID", 40),
-            "nome": ("Nome", 200),
-            "contato": ("Contato", 100),
-            "email": ("Email", 180),
+            "id":      ("ID",           40),
+            "nome":    ("Nome",        200),
+            "contato": ("Contato",     100),
+            "email":   ("Email",       180),
             "datansc": ("Data de Nasc.", 110),
-            "peso": ("Peso", 70),
-            "altura": ("Altura", 70),
+            "peso":    ("Peso",         70),
+            "altura":  ("Altura",       70),
         }
 
         for col, (texto, largura) in cabecalhos.items():
@@ -83,7 +83,6 @@ class MenuPrincipal(ctk.CTkFrame):
 
         self.tabela.pack(fill="both", expand=True, padx=20, pady=10)
 
-        # Carrega os dados reais do banco ao abrir a tela
         self._carregar_alunos()
 
     # ------------------------------------------------------------------
@@ -97,25 +96,19 @@ class MenuPrincipal(ctk.CTkFrame):
 
     def _preencher_tabela(self, alunos):
         """Limpa a tabela e insere a lista de alunos recebida."""
-        # Apaga todas as linhas atuais
         for item in self.tabela.get_children():
             self.tabela.delete(item)
 
         for i, aluno in enumerate(alunos):
             tag = "par" if i % 2 == 0 else "impar"
 
-            # Pega peso e altura do perfil se existir
-            peso = ""
-            altura = ""
-            if aluno.perfil:
-                peso = f"{aluno.perfil.peso} kg"
-                altura = f"{aluno.perfil.altura} cm"
-
+            peso   = f"{aluno.perfil.peso} kg"   if aluno.perfil else ""
+            altura = f"{aluno.perfil.altura} cm"  if aluno.perfil else ""
             data_nasc = aluno.data_nascimento.strftime("%d/%m/%Y") if aluno.data_nascimento else ""
 
             self.tabela.insert(
                 "", "end",
-                iid=str(aluno.id),   # usa o ID do banco como identificador da linha
+                iid=str(aluno.id),
                 values=(
                     aluno.id,
                     aluno.nome_completo,
@@ -147,8 +140,46 @@ class MenuPrincipal(ctk.CTkFrame):
         if not selecao:
             messagebox.showwarning("Aviso", "Selecione um aluno primeiro!")
             return None
-        # O iid da linha é o ID do banco (definimos assim em _preencher_tabela)
         return int(selecao[0])
+
+    def _excluir_aluno(self):
+        """Exclui o aluno selecionado após confirmação dupla."""
+        usuario_id = self._get_id_selecionado()
+        if usuario_id is None:
+            return
+
+        # Busca o nome para exibir na mensagem de confirmação
+        try:
+            aluno = self._usuario_service.buscar_por_id(usuario_id)
+            nome  = aluno.nome_completo
+        except Exception as e:
+            messagebox.showerror("Erro", str(e))
+            return
+
+        # Primeira confirmação
+        confirmar = messagebox.askyesno(
+            "Confirmar exclusão",
+            f"Deseja excluir o aluno '{nome}'?\n\nEsta ação também removerá todos os treinos e o perfil físico deste aluno.",
+        )
+        if not confirmar:
+            return
+
+        # Segunda confirmação — evita exclusão acidental
+        confirmar2 = messagebox.askyesno(
+            "Tem certeza?",
+            f"Esta ação é irreversível.\n\nConfirma a exclusão de '{nome}'?",
+        )
+        if not confirmar2:
+            return
+
+        try:
+            self._usuario_service.excluir(usuario_id)
+            self._usuario_service._session.commit()
+            messagebox.showinfo("Sucesso", f"Aluno '{nome}' excluído com sucesso.")
+            self._carregar_alunos()  # Atualiza a tabela
+        except Exception as e:
+            self._usuario_service._session.rollback()
+            messagebox.showerror("Erro ao excluir", str(e))
 
     def _abrir_informacoes(self):
         usuario_id = self._get_id_selecionado()

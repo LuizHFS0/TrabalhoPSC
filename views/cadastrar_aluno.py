@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from tkinter import messagebox
+from datetime import datetime
 
 from cores import *
 from utils.exceptions import CPFJaExisteError, EmailJaExisteError, UsuarioJaExisteError
@@ -36,10 +37,6 @@ class CadastrarAluno(ctk.CTkFrame):
         ).place(anchor="center", relx=0.8, y=35)
 
         # ── Labels + Entradas ──────────────────────────────────────────
-        # Cada item: (chave_interna, label_exibido, coluna_x, entrada_x)
-        # Coluna esquerda: x_label=20, x_entry=20
-        # Coluna direita:  x_label=430, x_entry=430
-
         campos_esquerda = [
             ("nome_completo",   "Nome completo:"),
             ("cpf",             "CPF:"),
@@ -80,7 +77,6 @@ class CadastrarAluno(ctk.CTkFrame):
                 pai, text=label_texto, text_color=TEXTO, font=("Inter", 13, "bold")
             ).place(x=x_label, y=y)
 
-            # Campo de senha fica oculto
             show = "*" if chave == "senha" else ""
             entry = ctk.CTkEntry(
                 pai, font=("Inter", 13), width=300, fg_color="DarkGrey",
@@ -88,9 +84,17 @@ class CadastrarAluno(ctk.CTkFrame):
             )
             entry.place(x=x_entry, y=y + 25)
 
-            # Guarda o widget pelo nome da chave
             self.campos[chave] = entry
             y += 70
+
+    def _calcular_idade(self, data_nasc: datetime.date) -> int:
+        """Calcula a idade real a partir da data de nascimento."""
+        hoje = datetime.today().date()
+        idade = hoje.year - data_nasc.year
+        # Subtrai 1 se ainda não fez aniversário este ano
+        if (hoje.month, hoje.day) < (data_nasc.month, data_nasc.day):
+            idade -= 1
+        return idade
 
     def _salvar(self):
         """Lê os campos, valida e chama o UsuarioService."""
@@ -104,7 +108,6 @@ class CadastrarAluno(ctk.CTkFrame):
             return
 
         # Converte data de nascimento se preenchida
-        from datetime import datetime
         data_nasc = None
         if dados["data_nascimento"]:
             try:
@@ -134,9 +137,17 @@ class CadastrarAluno(ctk.CTkFrame):
             try:
                 peso   = float(dados["peso"])   if dados["peso"]   else 70.0
                 altura = float(dados["altura"]) if dados["altura"] else 170.0
+
+                # CORRIGIDO: calcula idade real pela data de nascimento
+                # Se data não foi informada, usa 18 como padrão
+                if data_nasc:
+                    idade = self._calcular_idade(data_nasc)
+                else:
+                    idade = 18
+
                 self.master.perfil_service.cadastrar_perfil(
                     usuario_id=novo_usuario.id,
-                    idade=18,  # idade padrão já que não temos campo no form
+                    idade=idade,
                     peso=peso,
                     altura=altura,
                     objetivo=dados["objetivo"] or None,

@@ -9,8 +9,6 @@ class InformacaoAluno(ctk.CTkFrame):
         super().__init__(master)
         self.configure(bg_color=FUNDO)
 
-        # Busca o aluno no banco usando o service do master
-        # A view não cria service — usa o que o App já tem
         try:
             self._aluno = master.usuario_service.buscar_por_id(usuario_id)
         except Exception as e:
@@ -31,25 +29,31 @@ class InformacaoAluno(ctk.CTkFrame):
             topo,
             text=f"Informações de {self._aluno.nome_completo}",
             font=("Inter", 18, "bold")
-        ).place(anchor="center", relx=0.35, y=35)
+        ).place(anchor="center", relx=0.25, y=35)
+
+        # NOVO — botão Editar que abre a tela EditarAluno
+        ctk.CTkButton(
+            topo, text="✏️ Editar", font=("Inter", 14, "bold"),
+            fg_color=VERDE, text_color="black",
+            command=lambda: master.mostrar_editar_aluno(usuario_id)
+        ).place(anchor="center", relx=0.52, y=35)
 
         ctk.CTkButton(
-            topo, text="Ver Treinos", font=("Inter", 15, "bold"),
+            topo, text="Ver Treinos", font=("Inter", 14, "bold"),
             command=lambda: master.mostrar_treinos(usuario_id)
-        ).place(anchor="center", relx=0.65, y=35)
+        ).place(anchor="center", relx=0.67, y=35)
 
         ctk.CTkButton(
-            topo, text="Voltar", font=("Inter", 15, "bold"),
+            topo, text="Voltar", font=("Inter", 14, "bold"),
             command=lambda: master.mostrar_menu()
         ).place(anchor="center", relx=0.82, y=35)
 
         # ── Dados do aluno ─────────────────────────────────────────────
         a = self._aluno
-        p = a.perfil  # pode ser None se o perfil físico não foi cadastrado
+        p = a.perfil  # pode ser None
 
         data_nasc = a.data_nascimento.strftime("%d/%m/%Y") if a.data_nascimento else "—"
 
-        # (label, valor) — coluna esquerda
         info_esquerda = [
             ("Nome completo:",       a.nome_completo),
             ("Data de Nascimento:",  data_nasc),
@@ -61,7 +65,6 @@ class InformacaoAluno(ctk.CTkFrame):
             ("Membro desde:",        a.criado_em.strftime("%d/%m/%Y") if a.criado_em else "—"),
         ]
 
-        # (label, valor) — coluna direita
         info_direita = [
             ("E-mail:",                     a.email),
             ("Contato de Emergência:",      a.contato_emergencia or "—"),

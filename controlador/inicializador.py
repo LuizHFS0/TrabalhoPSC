@@ -5,6 +5,7 @@ from views.tela_login import LoginFrame
 from views.menu_principal import MenuPrincipal
 from views.informacoes import InformacaoAluno
 from views.cadastrar_aluno import CadastrarAluno
+from views.editar_aluno import EditarAluno          # NOVO
 from views.ver_treinos import VerTreinos
 from views.gerar_treino import GerarTreino
 
@@ -40,7 +41,6 @@ class App(ctk.CTk):
 
     def trocar_tela(self, classe_tela, **kwargs):
         if self.frame_atual:
-            # Sinaliza para callbacks pendentes que o frame será destruído
             try:
                 self.frame_atual.destroy()
             except Exception:
@@ -59,6 +59,9 @@ class App(ctk.CTk):
 
     def mostrar_informacao_aluno(self, usuario_id: int):
         self.trocar_tela(InformacaoAluno, usuario_id=usuario_id)
+
+    def mostrar_editar_aluno(self, usuario_id: int):       # NOVO
+        self.trocar_tela(EditarAluno, usuario_id=usuario_id)
 
     def mostrar_treinos(self, usuario_id: int):
         self.trocar_tela(VerTreinos, usuario_id=usuario_id)
