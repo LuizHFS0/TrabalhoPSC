@@ -127,11 +127,11 @@ class EditarAluno(ctk.CTkFrame):
 
         # Dados do perfil físico (se existir)
         mapa_perfil = {
-            "peso":     str(p.peso)     if p else "",
-            "altura":   str(p.altura)   if p else "",
-            "objetivo": p.objetivo      if p else "",
-            "nivel":    p.nivel         if p else "",
-            "doencas":  p.doencas       if p else "",
+            "peso":     str(p.peso)        if p else "",
+            "altura":   str(p.altura)      if p else "",
+            "objetivo": p.objetivo or ""   if p else "",
+            "nivel":    p.nivel    or ""   if p else "",
+            "doencas":  p.doencas  or ""   if p else "",
         }
 
         for chave, valor in {**mapa_usuario, **mapa_perfil}.items():
